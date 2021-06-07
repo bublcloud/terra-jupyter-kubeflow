@@ -27,7 +27,17 @@ RUN curl -L -o $GATK_ZIP_PATH https://github.com/broadinstitute/gatk/releases/do
  && unzip -o $GATK_ZIP_PATH -d /etc/ \
  && ln -s /etc/gatk-$GATK_VERSION/gatk /bin/gatk
 
-
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg  add - && apt-get update -y && apt-get install google-cloud-sdk -y
 
+RUN wget https://dl.min.io/client/mc/release/linux-amd64/mc \
+  && chmod a+x mc \
+  && mv mc /usr/bin
+
+RUN mkdir /files \
+  && chown jovyan:users /files
+
 USER $NB_UID
+
+COPY --chown=jovyan:users requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install -r /tmp/requirements.txt --quiet --no-cache-dir \
+ && rm -f /tmp/requirements.txt
